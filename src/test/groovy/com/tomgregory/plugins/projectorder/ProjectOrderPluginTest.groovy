@@ -1,5 +1,6 @@
 package com.tomgregory.plugins.projectorder
 
+import org.gradle.api.Project
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.Rule
@@ -72,6 +73,33 @@ class ProjectOrderPluginTest extends Specification {
         taskPaths(result) == [':0-project:sayHi', ':1-project:sayHi', ':2-project:sayHi', ':10-project:sayHi', ':11-project:sayHi', ':12-project:sayHi']
     }
 
+    def 'controls execution order between tasks in multiple projects using triple-digit numeric prefix'() {
+        given:
+        createProjects('57-project', '156-project', '999-project')
+        when:
+        BuildResult result = runTask('sayHi')
+        then:
+        taskPaths(result) == [':57-project:sayHi', ':156-project:sayHi', ':999-project:sayHi']
+    }
+
+    def 'controls execution order between tasks in multiple projects using numeric prefix and alphanumeric suffix'() {
+        given:
+        createProjects('10-project', '11-b-project', '11-a-project', '12-project')
+        when:
+        BuildResult result = runTask('sayHi')
+        then:
+        taskPaths(result) == [':10-project:sayHi', ':11-a-project:sayHi', ':11-b-project:sayHi', ':12-project:sayHi']
+    }
+
+    def 'controls execution order between tasks in multiple projects by numeric then alphanumeric'() {
+        given:
+        createProjects('a-project', '1-project', 'b-project', '2-project')
+        when:
+        BuildResult result = runTask('sayHi')
+        then:
+        taskPaths(result) == [':1-project:sayHi', ':2-project:sayHi', ':a-project:sayHi', ':b-project:sayHi']
+    }
+
     private void createProjects(String... projectNames) {
         projectNames.each { projectName ->
             createProject(projectName)
@@ -100,7 +128,6 @@ class ProjectOrderPluginTest extends Specification {
                 .withArguments(taskName, '--stacktrace')
                 .withPluginClasspath()
                 .withDebug(true)
-                .forwardOutput()
                 .build()
     }
 
