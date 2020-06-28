@@ -14,7 +14,9 @@ class ProjectOrderPlugin implements Plugin<Project> {
             Project previousSubProject
             sortedSubProjects.each { subProject ->
                 if (previousSubProject) {
-                    subProject.tasks[extension.taskName].dependsOn previousSubProject.tasks[extension.taskName]
+                    extension.taskNames.each { taskName ->
+                        subProject.tasks[taskName].mustRunAfter previousSubProject.tasks[taskName]
+                    }
                 }
                 previousSubProject = subProject
             }

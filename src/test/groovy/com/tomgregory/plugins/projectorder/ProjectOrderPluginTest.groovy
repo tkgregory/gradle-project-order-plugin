@@ -1,6 +1,6 @@
 package com.tomgregory.plugins.projectorder
 
-import org.gradle.api.Project
+
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.Rule
@@ -15,89 +15,106 @@ class ProjectOrderPluginTest extends Specification {
 
     def setup() {
         settingsFile = testProjectDir.newFile('settings.gradle')
-
-        buildFile = testProjectDir.newFile('build.gradle')
-        buildFile << """
-            plugins {
-                id 'com.tomgregory.project-order'
-            }
-            
-            projectOrder {
-                taskName = 'sayHi'
-            }
-        """
     }
 
     def 'controls execution order between tasks in multiple projects using suffix'() {
         given:
+        buildFileForTaskNames('sayHi')
         createProjects('project1', 'project2', 'project3')
         when:
-        BuildResult result = runTask('sayHi')
+        BuildResult result = runTasks('sayHi')
         then:
-        taskPaths(result) == [':project1:sayHi', ':project2:sayHi', ':project3:sayHi']
+        executedTaskPaths(result) == [':project1:sayHi', ':project2:sayHi', ':project3:sayHi']
     }
 
     def 'controls execution order between tasks in multiple projects when projects declared out of order using suffix'() {
         given:
+        buildFileForTaskNames('sayHi')
         createProjects('project2', 'project3', 'project1')
         when:
-        BuildResult result = runTask('sayHi')
+        BuildResult result = runTasks('sayHi')
         then:
-        taskPaths(result) == [':project1:sayHi', ':project2:sayHi', ':project3:sayHi']
+        executedTaskPaths(result) == [':project1:sayHi', ':project2:sayHi', ':project3:sayHi']
     }
 
     def 'controls execution order between tasks in multiple projects using numeric prefix'() {
         given:
+        buildFileForTaskNames('sayHi')
         createProjects('bproject', 'aproject', 'cproject')
         when:
-        BuildResult result = runTask('sayHi')
+        BuildResult result = runTasks('sayHi')
         then:
-        taskPaths(result) == [':aproject:sayHi', ':bproject:sayHi', ':cproject:sayHi']
+        executedTaskPaths(result) == [':aproject:sayHi', ':bproject:sayHi', ':cproject:sayHi']
     }
 
     def 'controls execution order between tasks in multiple projects using prefix and suffix'() {
         given:
+        buildFileForTaskNames('sayHi')
         createProjects('project3', 'bproject', 'project1', 'aproject', 'project2', 'cproject')
         when:
-        BuildResult result = runTask('sayHi')
+        BuildResult result = runTasks('sayHi')
         then:
-        taskPaths(result) == [':aproject:sayHi', ':bproject:sayHi', ':cproject:sayHi', ':project1:sayHi', ':project2:sayHi', ':project3:sayHi']
+        executedTaskPaths(result) == [':aproject:sayHi', ':bproject:sayHi', ':cproject:sayHi', ':project1:sayHi', ':project2:sayHi', ':project3:sayHi']
     }
 
     def 'controls execution order between tasks in multiple projects using double-digit numeric prefix'() {
         given:
+        buildFileForTaskNames('sayHi')
         createProjects('0-project', '1-project', '2-project', '10-project', '11-project', '12-project')
         when:
-        BuildResult result = runTask('sayHi')
+        BuildResult result = runTasks('sayHi')
         then:
-        taskPaths(result) == [':0-project:sayHi', ':1-project:sayHi', ':2-project:sayHi', ':10-project:sayHi', ':11-project:sayHi', ':12-project:sayHi']
+        executedTaskPaths(result) == [':0-project:sayHi', ':1-project:sayHi', ':2-project:sayHi', ':10-project:sayHi', ':11-project:sayHi', ':12-project:sayHi']
     }
 
     def 'controls execution order between tasks in multiple projects using triple-digit numeric prefix'() {
         given:
+        buildFileForTaskNames('sayHi')
         createProjects('57-project', '156-project', '999-project')
         when:
-        BuildResult result = runTask('sayHi')
+        BuildResult result = runTasks('sayHi')
         then:
-        taskPaths(result) == [':57-project:sayHi', ':156-project:sayHi', ':999-project:sayHi']
+        executedTaskPaths(result) == [':57-project:sayHi', ':156-project:sayHi', ':999-project:sayHi']
     }
 
     def 'controls execution order between tasks in multiple projects using numeric prefix and alphanumeric suffix'() {
         given:
+        buildFileForTaskNames('sayHi')
         createProjects('10-project', '11-b-project', '11-a-project', '12-project')
         when:
-        BuildResult result = runTask('sayHi')
+        BuildResult result = runTasks('sayHi')
         then:
-        taskPaths(result) == [':10-project:sayHi', ':11-a-project:sayHi', ':11-b-project:sayHi', ':12-project:sayHi']
+        executedTaskPaths(result) == [':10-project:sayHi', ':11-a-project:sayHi', ':11-b-project:sayHi', ':12-project:sayHi']
     }
 
     def 'controls execution order between tasks in multiple projects by numeric then alphanumeric'() {
         given:
+        buildFileForTaskNames('sayHi')
         createProjects('a-project', '1-project', 'b-project', '2-project')
         when:
-        BuildResult result = runTask('sayHi')
+        BuildResult result = runTasks('sayHi')
         then:
-        taskPaths(result) == [':1-project:sayHi', ':2-project:sayHi', ':a-project:sayHi', ':b-project:sayHi']
+        executedTaskPaths(result) == [':1-project:sayHi', ':2-project:sayHi', ':a-project:sayHi', ':b-project:sayHi']
+    }
+
+    def 'controls execution order between multiple tasks in multiple projects'() {
+        given:
+        buildFileForTaskNames('sayHi', 'sayBye')
+        createProjects('project2', 'project3', 'project1')
+        when:
+        BuildResult result = runTasks('sayHi', 'sayBye')
+        then:
+        executedTaskPaths(result) == [':project1:sayHi', ':project2:sayHi', ':project3:sayHi', ':project1:sayBye', ':project2:sayBye', ':project3:sayBye']
+    }
+
+    def 'controls execution order but does not force dependsOn relationship between tasks'() {
+        given:
+        buildFileForTaskNames('sayHi')
+        createProjects('project2', 'project3', 'project1')
+        when:
+        BuildResult result = runTasks('project2:sayHi')
+        then:
+        executedTaskPaths(result) == [':project2:sayHi']
     }
 
     private void createProjects(String... projectNames) {
@@ -112,8 +129,15 @@ class ProjectOrderPluginTest extends Specification {
         projectBuildFile << """
             task sayHi {
                 doLast {
-                    println "My name is \${project.name}"
+                    println "Hi from \${project.name}"
                 }
+            }
+            
+            task sayBye {
+                doLast {
+                    println "Bye from \${project.name}"
+                }
+                mustRunAfter sayHi
             }
         """
 
@@ -122,16 +146,35 @@ class ProjectOrderPluginTest extends Specification {
         """
     }
 
-    private BuildResult runTask(String taskName) {
+    private BuildResult runTasks(String... taskNames) {
         return GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
-                .withArguments(taskName, '--stacktrace')
+                .withArguments(taskNames)
                 .withPluginClasspath()
                 .withDebug(true)
                 .build()
     }
 
-    private List<String> taskPaths(BuildResult buildResult) {
+    private List<String> executedTaskPaths(BuildResult buildResult) {
         return buildResult.tasks.collect { element -> element.path }
+    }
+
+    private void buildFileForTaskNames(String... taskNames) {
+        String taskNameConfig = taskNames
+                .collect { taskName ->
+                    return "'$taskName'"
+                }
+                .join(',')
+
+        buildFile = testProjectDir.newFile('build.gradle')
+        buildFile << """
+            plugins {
+                id 'com.tomgregory.project-order'
+            }
+            
+            projectOrder {
+                taskNames = [$taskNameConfig]
+            }
+        """
     }
 }
