@@ -1,11 +1,12 @@
 package com.tomgregory.plugins.projectorder
 
-
 import org.gradle.testkit.runner.BuildResult
-import org.gradle.testkit.runner.GradleRunner
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
+
+import static com.tomgregory.plugins.projectorder.TestUtil.executedTaskPaths
+import static com.tomgregory.plugins.projectorder.TestUtil.runTasks
 
 class ProjectOrderPluginIntegrationTest extends Specification {
     @Rule
@@ -22,7 +23,7 @@ class ProjectOrderPluginIntegrationTest extends Specification {
         buildFileForTaskNames('sayHi')
         createProjectsWithDefaultTasks('project1', 'project2', 'project3')
         when:
-        BuildResult result = runTasks('sayHi')
+        BuildResult result = runTasks(testProjectDir.root, 'sayHi')
         then:
         executedTaskPaths(result) == [':project1:sayHi', ':project2:sayHi', ':project3:sayHi']
     }
@@ -32,7 +33,7 @@ class ProjectOrderPluginIntegrationTest extends Specification {
         buildFileForTaskNames('sayHi')
         createProjectsWithDefaultTasks('project2', 'project3', 'project1')
         when:
-        BuildResult result = runTasks('sayHi')
+        BuildResult result = runTasks(testProjectDir.root, 'sayHi')
         then:
         executedTaskPaths(result) == [':project1:sayHi', ':project2:sayHi', ':project3:sayHi']
     }
@@ -42,7 +43,7 @@ class ProjectOrderPluginIntegrationTest extends Specification {
         buildFileForTaskNames('sayHi')
         createProjectsWithDefaultTasks('bproject', 'aproject', 'cproject')
         when:
-        BuildResult result = runTasks('sayHi')
+        BuildResult result = runTasks(testProjectDir.root, 'sayHi')
         then:
         executedTaskPaths(result) == [':aproject:sayHi', ':bproject:sayHi', ':cproject:sayHi']
     }
@@ -52,7 +53,7 @@ class ProjectOrderPluginIntegrationTest extends Specification {
         buildFileForTaskNames('sayHi')
         createProjectsWithDefaultTasks('project3', 'bproject', 'project1', 'aproject', 'project2', 'cproject')
         when:
-        BuildResult result = runTasks('sayHi')
+        BuildResult result = runTasks(testProjectDir.root, 'sayHi')
         then:
         executedTaskPaths(result) == [':aproject:sayHi', ':bproject:sayHi', ':cproject:sayHi', ':project1:sayHi', ':project2:sayHi', ':project3:sayHi']
     }
@@ -62,7 +63,7 @@ class ProjectOrderPluginIntegrationTest extends Specification {
         buildFileForTaskNames('sayHi')
         createProjectsWithDefaultTasks('0-project', '1-project', '2-project', '10-project', '11-project', '12-project')
         when:
-        BuildResult result = runTasks('sayHi')
+        BuildResult result = runTasks(testProjectDir.root, 'sayHi')
         then:
         executedTaskPaths(result) == [':0-project:sayHi', ':1-project:sayHi', ':2-project:sayHi', ':10-project:sayHi', ':11-project:sayHi', ':12-project:sayHi']
     }
@@ -72,7 +73,7 @@ class ProjectOrderPluginIntegrationTest extends Specification {
         buildFileForTaskNames('sayHi')
         createProjectsWithDefaultTasks('57-project', '156-project', '999-project')
         when:
-        BuildResult result = runTasks('sayHi')
+        BuildResult result = runTasks(testProjectDir.root, 'sayHi')
         then:
         executedTaskPaths(result) == [':57-project:sayHi', ':156-project:sayHi', ':999-project:sayHi']
     }
@@ -82,7 +83,7 @@ class ProjectOrderPluginIntegrationTest extends Specification {
         buildFileForTaskNames('sayHi')
         createProjectsWithDefaultTasks('10-project', '11-b-project', '11-a-project', '12-project')
         when:
-        BuildResult result = runTasks('sayHi')
+        BuildResult result = runTasks(testProjectDir.root, 'sayHi')
         then:
         executedTaskPaths(result) == [':10-project:sayHi', ':11-a-project:sayHi', ':11-b-project:sayHi', ':12-project:sayHi']
     }
@@ -92,7 +93,7 @@ class ProjectOrderPluginIntegrationTest extends Specification {
         buildFileForTaskNames('sayHi')
         createProjectsWithDefaultTasks('a-project', '1-project', 'b-project', '2-project')
         when:
-        BuildResult result = runTasks('sayHi')
+        BuildResult result = runTasks(testProjectDir.root, 'sayHi')
         then:
         executedTaskPaths(result) == [':1-project:sayHi', ':2-project:sayHi', ':a-project:sayHi', ':b-project:sayHi']
     }
@@ -102,7 +103,7 @@ class ProjectOrderPluginIntegrationTest extends Specification {
         buildFileForTaskNames('sayHi', 'sayBye')
         createProjectsWithDefaultTasks('project2', 'project3', 'project1')
         when:
-        BuildResult result = runTasks('sayHi', 'sayBye')
+        BuildResult result = runTasks(testProjectDir.root, 'sayHi', 'sayBye')
         then:
         executedTaskPaths(result) == [':project1:sayHi', ':project2:sayHi', ':project3:sayHi', ':project1:sayBye', ':project2:sayBye', ':project3:sayBye']
     }
@@ -112,7 +113,7 @@ class ProjectOrderPluginIntegrationTest extends Specification {
         buildFileForTaskNames('sayHi')
         createProjectsWithDefaultTasks('project2', 'project3', 'project1')
         when:
-        BuildResult result = runTasks('project2:sayHi')
+        BuildResult result = runTasks(testProjectDir.root, 'project2:sayHi')
         then:
         executedTaskPaths(result) == [':project2:sayHi']
     }
@@ -123,7 +124,7 @@ class ProjectOrderPluginIntegrationTest extends Specification {
         createProjectsWithDefaultTasks('project4', 'project2', 'project1', 'project5')
         createProject('project3')
         when:
-        BuildResult result = runTasks('sayHi')
+        BuildResult result = runTasks(testProjectDir.root, 'sayHi')
         then:
         executedTaskPaths(result) == [':project1:sayHi', ':project2:sayHi', ':project4:sayHi', ':project5:sayHi']
     }
@@ -151,19 +152,6 @@ class ProjectOrderPluginIntegrationTest extends Specification {
         settingsFile << """
             include '$projectName'
         """
-    }
-
-    private BuildResult runTasks(String... taskNames) {
-        return GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments(taskNames)
-                .withPluginClasspath()
-                .withDebug(true)
-                .build()
-    }
-
-    private static List<String> executedTaskPaths(BuildResult buildResult) {
-        return buildResult.tasks.collect { element -> element.path }
     }
 
     private void buildFileForTaskNames(String... taskNames) {

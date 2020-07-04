@@ -48,7 +48,7 @@ The plugin uses the following rules to determine the order in which subpproject 
 1. Subprojects with a numeric prefix are sorted numerically i.e. *9-project* before *66-project*
 1. Subprojects with a letter prefix are sorted alphabetically i.e. *cat-project* before *dog-project*
 
-For more details of ordering and some examples, see [ProjectComparatorTest](srctest/groovy/com/tomgregory/plugins/projectorder/ProjectComparatorTest).
+For more details of ordering and some examples, see [ProjectComparatorTest](src/test/groovy/com/tomgregory/plugins/projectorder/ProjectComparatorTest.groovy).
 
 ## An example
 
@@ -64,9 +64,9 @@ Imagine you have a project with multiple subprojects that each deploy infrastruc
 `:networking-resources:deploy` then `:security-resources:deploy` then `compute-resources:deploy`  
 
 The *project-order* plugin will set a `mustRunAfter` relationship between the `deploy` task of each sub-project. This will be based
-on the ordering it determines.
+on the ordering as defined above.
 
-The project structure can be reordered to control task execution, like this:
+The project structure can be reordered to control task execution by renaming the projects, like this:
 
 ```
 /my-project
@@ -74,3 +74,4 @@ The project structure can be reordered to control task execution, like this:
 /my-project/2-security-resources
 /my-project/3-compute-resources
 ```
+This same example is executed in [StandaloneExampleTest](src/test/groovy/com/tomgregory/plugins/projectorder/StandaloneExampleTest.groovy).
