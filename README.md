@@ -1,4 +1,4 @@
-A plugin to control ordering of task execution between projects.
+A Gradle plugin to control ordering of task execution between projects.
 
 ## What problem does this plugin solve?
 
