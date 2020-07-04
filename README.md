@@ -30,7 +30,7 @@ plugins {
     id 'com.tomgregory.project-order' version '1.0.0'
 }
 ```
-The plugin should only be applied to the parent project. It will inspect all sub-projects of the project it is applied to.
+The plugin should only be applied to the parent project. It will inspect all subprojects of the project it is applied to.
 
 For the plugin to do anything, you need to apply the following configuration in *build.gradle*:
 
@@ -39,11 +39,20 @@ projectOrder {
     taskNames = ['taskA', 'taskB']
 }
 ```
-**taskNames** is a list of tasks in the sub-projects, for which a *mustRunAfter* relationship should be applied
+**taskNames** is a list of tasks in the subprojects, for which a *mustRunAfter* relationship should be applied
+
+#### Ordering
+
+The plugin uses the following rules to determine the order in which subpproject tasks should be linked with a `mustRunAfter` relationship:
+1. A subproject with a numeric prefix comes before one with a letter prefix i.e. *66-project* before *abc-project*
+1. Subprojects with a numeric prefix are sorted numerically i.e. *9-project* before *66-project*
+1. Subprojects with a letter prefix are sorted alphabetically i.e. *cat-project* before *dog-project*
+
+For more details of ordering and some examples, see [ProjectComparatorTest](srctest/groovy/com/tomgregory/plugins/projectorder/ProjectComparatorTest).
 
 ## An example
 
-Imagine you have a project with multiple sub-projects that each deploy infrastructure resources into the cloud:
+Imagine you have a project with multiple subprojects that each deploy infrastructure resources into the cloud:
 ```
 /my-project
 /my-project/networking-resources
