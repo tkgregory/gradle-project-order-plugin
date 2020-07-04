@@ -7,7 +7,7 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
-class ProjectOrderPluginTest extends Specification {
+class ProjectOrderPluginIntegrationTest extends Specification {
     @Rule
     TemporaryFolder testProjectDir = new TemporaryFolder()
     File buildFile
@@ -20,7 +20,7 @@ class ProjectOrderPluginTest extends Specification {
     def 'controls execution order between tasks in multiple projects using suffix'() {
         given:
         buildFileForTaskNames('sayHi')
-        createProjects('project1', 'project2', 'project3')
+        createProjectsWithDefaultTasks('project1', 'project2', 'project3')
         when:
         BuildResult result = runTasks('sayHi')
         then:
@@ -30,7 +30,7 @@ class ProjectOrderPluginTest extends Specification {
     def 'controls execution order between tasks in multiple projects when projects declared out of order using suffix'() {
         given:
         buildFileForTaskNames('sayHi')
-        createProjects('project2', 'project3', 'project1')
+        createProjectsWithDefaultTasks('project2', 'project3', 'project1')
         when:
         BuildResult result = runTasks('sayHi')
         then:
@@ -40,7 +40,7 @@ class ProjectOrderPluginTest extends Specification {
     def 'controls execution order between tasks in multiple projects using numeric prefix'() {
         given:
         buildFileForTaskNames('sayHi')
-        createProjects('bproject', 'aproject', 'cproject')
+        createProjectsWithDefaultTasks('bproject', 'aproject', 'cproject')
         when:
         BuildResult result = runTasks('sayHi')
         then:
@@ -50,7 +50,7 @@ class ProjectOrderPluginTest extends Specification {
     def 'controls execution order between tasks in multiple projects using prefix and suffix'() {
         given:
         buildFileForTaskNames('sayHi')
-        createProjects('project3', 'bproject', 'project1', 'aproject', 'project2', 'cproject')
+        createProjectsWithDefaultTasks('project3', 'bproject', 'project1', 'aproject', 'project2', 'cproject')
         when:
         BuildResult result = runTasks('sayHi')
         then:
@@ -60,7 +60,7 @@ class ProjectOrderPluginTest extends Specification {
     def 'controls execution order between tasks in multiple projects using double-digit numeric prefix'() {
         given:
         buildFileForTaskNames('sayHi')
-        createProjects('0-project', '1-project', '2-project', '10-project', '11-project', '12-project')
+        createProjectsWithDefaultTasks('0-project', '1-project', '2-project', '10-project', '11-project', '12-project')
         when:
         BuildResult result = runTasks('sayHi')
         then:
@@ -70,7 +70,7 @@ class ProjectOrderPluginTest extends Specification {
     def 'controls execution order between tasks in multiple projects using triple-digit numeric prefix'() {
         given:
         buildFileForTaskNames('sayHi')
-        createProjects('57-project', '156-project', '999-project')
+        createProjectsWithDefaultTasks('57-project', '156-project', '999-project')
         when:
         BuildResult result = runTasks('sayHi')
         then:
@@ -80,7 +80,7 @@ class ProjectOrderPluginTest extends Specification {
     def 'controls execution order between tasks in multiple projects using numeric prefix and alphanumeric suffix'() {
         given:
         buildFileForTaskNames('sayHi')
-        createProjects('10-project', '11-b-project', '11-a-project', '12-project')
+        createProjectsWithDefaultTasks('10-project', '11-b-project', '11-a-project', '12-project')
         when:
         BuildResult result = runTasks('sayHi')
         then:
@@ -90,7 +90,7 @@ class ProjectOrderPluginTest extends Specification {
     def 'controls execution order between tasks in multiple projects by numeric then alphanumeric'() {
         given:
         buildFileForTaskNames('sayHi')
-        createProjects('a-project', '1-project', 'b-project', '2-project')
+        createProjectsWithDefaultTasks('a-project', '1-project', 'b-project', '2-project')
         when:
         BuildResult result = runTasks('sayHi')
         then:
@@ -100,7 +100,7 @@ class ProjectOrderPluginTest extends Specification {
     def 'controls execution order between multiple tasks in multiple projects'() {
         given:
         buildFileForTaskNames('sayHi', 'sayBye')
-        createProjects('project2', 'project3', 'project1')
+        createProjectsWithDefaultTasks('project2', 'project3', 'project1')
         when:
         BuildResult result = runTasks('sayHi', 'sayBye')
         then:
@@ -110,36 +110,43 @@ class ProjectOrderPluginTest extends Specification {
     def 'controls execution order but does not force dependsOn relationship between tasks'() {
         given:
         buildFileForTaskNames('sayHi')
-        createProjects('project2', 'project3', 'project1')
+        createProjectsWithDefaultTasks('project2', 'project3', 'project1')
         when:
         BuildResult result = runTasks('project2:sayHi')
         then:
         executedTaskPaths(result) == [':project2:sayHi']
     }
 
-    private void createProjects(String... projectNames) {
+    def 'handles subprojects missing specified tasks'() {
+        given:
+        buildFileForTaskNames('sayHi')
+        createProjectsWithDefaultTasks('project4', 'project2', 'project1', 'project5')
+        createProject('project3')
+        when:
+        BuildResult result = runTasks('sayHi')
+        then:
+        executedTaskPaths(result) == [':project1:sayHi', ':project2:sayHi', ':project4:sayHi', ':project5:sayHi']
+    }
+
+    private void createProjectsWithDefaultTasks(String... projectNames) {
         projectNames.each { projectName ->
-            createProject(projectName)
+            createProject(projectName, 'sayHi', 'sayBye')
         }
     }
 
-    private void createProject(String projectName) {
+    private void createProject(String projectName, String... taskNames) {
         File projectFolder = testProjectDir.newFolder(projectName)
         File projectBuildFile = new File(projectFolder, 'build.gradle')
-        projectBuildFile << """
-            task sayHi {
+
+        taskNames.each { taskName ->
+            projectBuildFile << """
+            task $taskName {
                 doLast {
-                    println "Hi from \${project.name}"
+                    println "Running $taskName in \${project.name}"
                 }
-            }
-            
-            task sayBye {
-                doLast {
-                    println "Bye from \${project.name}"
-                }
-                mustRunAfter sayHi
             }
         """
+        }
 
         settingsFile << """
             include '$projectName'

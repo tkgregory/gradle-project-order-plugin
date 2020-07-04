@@ -9,21 +9,25 @@ class ProjectOrderPlugin implements Plugin<Project> {
         ProjectOrderExtension extension = project.getExtensions().create("projectOrder", ProjectOrderExtension.class)
 
         project.gradle.projectsEvaluated {
-            List<Project> sortedSubProjects = sortSubProjects(project)
+            List<Project> sortedSubprojects = sortSubprojects(project)
 
-            Project previousSubProject
-            sortedSubProjects.each { subProject ->
-                if (previousSubProject) {
+            Project previousSubproject
+            sortedSubprojects.each { subproject ->
+                if (previousSubproject) {
                     extension.taskNames.each { taskName ->
-                        subProject.tasks[taskName].mustRunAfter previousSubProject.tasks[taskName]
+                        def subprojectTask = subproject.tasks.findByName(taskName)
+                        def previousSubprojectTask = previousSubproject.tasks.findByName(taskName)
+                        if (subprojectTask && previousSubprojectTask) {
+                            subprojectTask.mustRunAfter previousSubprojectTask
+                        }
                     }
                 }
-                previousSubProject = subProject
+                previousSubproject = subproject
             }
         }
     }
 
-    private static List<Project> sortSubProjects(Project rootProject) {
+    private static List<Project> sortSubprojects(Project rootProject) {
         return rootProject.subprojects.toSorted(new ProjectComparator())
     }
 }
