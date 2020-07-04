@@ -155,7 +155,7 @@ class ProjectOrderPluginTest extends Specification {
                 .build()
     }
 
-    private List<String> executedTaskPaths(BuildResult buildResult) {
+    private static List<String> executedTaskPaths(BuildResult buildResult) {
         return buildResult.tasks.collect { element -> element.path }
     }
 

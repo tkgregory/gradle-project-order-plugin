@@ -1,4 +1,4 @@
-package com.tomgregory.plugins.projectorder;
+package com.tomgregory.plugins.projectorder
 
 import org.gradle.api.Project
 
@@ -43,7 +43,7 @@ class ProjectComparator implements Comparator<Project> {
         return Integer.valueOf((name =~ NUMERIC_PATTERN).findAll()[0][1])
     }
 
-    private int simpleNameComparison(Project projectA, Project projectB) {
+    private static int simpleNameComparison(Project projectA, Project projectB) {
         projectA.name.compareTo(projectB.name)
     }
 }

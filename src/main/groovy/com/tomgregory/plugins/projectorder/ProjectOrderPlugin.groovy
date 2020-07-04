@@ -23,7 +23,7 @@ class ProjectOrderPlugin implements Plugin<Project> {
         }
     }
 
-    private List<Project> sortSubProjects(Project rootProject) {
+    private static List<Project> sortSubProjects(Project rootProject) {
         return rootProject.subprojects.toSorted(new ProjectComparator())
     }
 }

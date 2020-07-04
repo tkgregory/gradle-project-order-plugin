@@ -11,7 +11,7 @@ class ProjectComparatorTest extends Specification {
         given:
         List<Project> projects = createProjects('project2', 'project1', 'project3')
         when:
-        List<Project> sorted = projects.toSorted(projectComparator);
+        List<Project> sorted = projects.toSorted(projectComparator)
         then:
         sorted.collect { it.name } == ['project1', 'project2', 'project3']
     }
@@ -20,7 +20,7 @@ class ProjectComparatorTest extends Specification {
         given:
         List<Project> projects = createProjects('2-project', '1-project', '3-project')
         when:
-        List<Project> sorted = projects.toSorted(projectComparator);
+        List<Project> sorted = projects.toSorted(projectComparator)
         then:
         sorted.collect { it.name } == ['1-project', '2-project', '3-project']
     }
@@ -29,7 +29,7 @@ class ProjectComparatorTest extends Specification {
         given:
         List<Project> projects = createProjects('25-project', '10-project', '22-project')
         when:
-        List<Project> sorted = projects.toSorted(projectComparator);
+        List<Project> sorted = projects.toSorted(projectComparator)
         then:
         sorted.collect { it.name } == ['10-project', '22-project', '25-project']
     }
@@ -38,7 +38,7 @@ class ProjectComparatorTest extends Specification {
         given:
         List<Project> projects = createProjects('999-project', '57-project', '156-project')
         when:
-        List<Project> sorted = projects.toSorted(projectComparator);
+        List<Project> sorted = projects.toSorted(projectComparator)
         then:
         sorted.collect { it.name } == ['57-project', '156-project', '999-project']
     }
@@ -47,7 +47,7 @@ class ProjectComparatorTest extends Specification {
         given:
         List<Project> projects = createProjects('12-project', '11-b-project', '11-a-project', '10-project')
         when:
-        List<Project> sorted = projects.toSorted(projectComparator);
+        List<Project> sorted = projects.toSorted(projectComparator)
         then:
         sorted.collect { it.name } == ['10-project', '11-a-project', '11-b-project', '12-project']
     }
@@ -56,7 +56,7 @@ class ProjectComparatorTest extends Specification {
         given:
         List<Project> projects = createProjects('a-project', '1-project', 'b-project', '2-project')
         when:
-        List<Project> sorted = projects.toSorted(projectComparator);
+        List<Project> sorted = projects.toSorted(projectComparator)
         then:
         sorted.collect { it.name } == ['1-project', '2-project', 'a-project', 'b-project']
     }
