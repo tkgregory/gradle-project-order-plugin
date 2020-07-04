@@ -16,13 +16,13 @@ taskA.mustRunAfter taskB
 findProject('projectA').tasks['myTask'].mustRunAfter findProject('projectB').tasks['myTask']
 ```
 
-If you need to control task execution order *between projects* then this code is OK for simple use cases.
+If you need to control task execution order *between projects* then the above code is OK for simple use cases.
 
 As the number of projects increases though, the amount of **repeated code and maintenance required goes up**. Hence, the Project Order Plugin was created. 
 
 ## Usage
 
-Apply the plugin to your *build.gradle*:
+Apply the Project Order Plugin to your *build.gradle*:
 ```groovy
 plugins {
     id 'com.tomgregory.project-order' version '1.0.0'
@@ -41,7 +41,7 @@ projectOrder {
 
 ## Ordering
 
-The plugin uses the following rules to determine the order in which subpproject tasks should be linked with a `mustRunAfter` relationship:
+The Project Order Plugin uses the following rules to determine the order in which subpproject tasks should be linked with a `mustRunAfter` relationship:
 1. A subproject with a numeric prefix comes before one with a letter prefix i.e. *66-project* before *abc-project*
 1. Subprojects with a numeric prefix are sorted numerically i.e. *9-project* before *66-project*
 1. Subprojects with a letter prefix are sorted alphabetically i.e. *cat-project* before *dog-project*
@@ -64,7 +64,7 @@ Imagine you have a project with multiple subprojects that each deploy infrastruc
 The Project Order Plugin will set a `mustRunAfter` relationship between the `deploy` task of each subproject. This will be based
 on the ordering as defined above.
 
-For the Project Order Plugin to work properly the projects should be renamed like this:
+For the plugin to work properly the projects should be renamed like this:
 ```
 /my-project
 /my-project/1-networking-resources
