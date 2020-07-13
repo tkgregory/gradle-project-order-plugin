@@ -3,10 +3,11 @@ plugins {
     id 'groovy'
     id 'java-gradle-plugin'
     id 'com.gradle.plugin-publish' version '0.12.0'
+    id "pl.allegro.tech.build.axion-release" version "1.12.0"
 }
 
 group 'com.tomgregory'
-version '1.0.0'
+project.version = scmVersion.version
 
 repositories {
     mavenCentral()
