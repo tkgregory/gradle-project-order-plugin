@@ -81,4 +81,5 @@ projectOrder {
 }
 ```
 
-This same example is executed in [StandaloneExampleTest](src/test/groovy/com/tomgregory/plugins/projectorder/StandaloneExampleTest.groovy).
+This same example is executed in [StandaloneExampleTest](src/test/groovy/com/tomgregory/plugins/projectorder/StandaloneExampleTest.groovy)
+and also this [example repository](https://github.com/tkgregory/gradle-project-order-plugin-example).
